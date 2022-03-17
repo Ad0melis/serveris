@@ -1,3 +1,5 @@
+import { server } from './lib/server.js';
+
 
 const app = {};
 
@@ -9,7 +11,7 @@ app.init = () => {
     // prisijungimas prie DB (duomenu baze)
 
     // uzkurti pati serveri (musu programa)
-    console.log('Server is running...');
+   server.init();
 
     // reguliariu procesu paleidimas:
     // - istrinti senus/nebereikalingus failus
