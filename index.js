@@ -1,13 +1,22 @@
+
 const app = {};
 
-app.init = () =>{
-    
+app.init = () => {
+    // pasiruosti pradinius folder'ius
 
+    // pasiruosti pradinius failus
 
+    // prisijungimas prie DB (duomenu baze)
 
-    console.log('Server is runnig...');
-};
+    // uzkurti pati serveri (musu programa)
+    console.log('Server is running...');
 
-app.init()
+    // reguliariu procesu paleidimas:
+    // - istrinti senus/nebereikalingus failus
+    // - maziau naudojamu failu archivavimas
+    // - atsinaujinti informacija per/is API
+}
+
+app.init();
 
 export { app };
