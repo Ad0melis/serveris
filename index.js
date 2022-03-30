@@ -1,6 +1,5 @@
 import { server } from './lib/server.js';
 
-
 const app = {};
 
 app.init = () => {
@@ -11,7 +10,7 @@ app.init = () => {
     // prisijungimas prie DB (duomenu baze)
 
     // uzkurti pati serveri (musu programa)
-   server.init();
+    server.init();
 
     // reguliariu procesu paleidimas:
     // - istrinti senus/nebereikalingus failus
