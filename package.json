@@ -10,7 +10,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.config.js --watchAll --passWithNoTests"
   },
   "keywords": [],
-  "author": "Rimantas",
+  "author": "Adomas",
   "license": "MIT",
   "devDependencies": {
     "jest": "^27.5.0",
