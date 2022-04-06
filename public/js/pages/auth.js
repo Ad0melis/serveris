@@ -1,3 +1,5 @@
+import { IsValid } from '../components/is-valid/IsValid.js';
+
 /*
 1) susirasti forma ir jos VISUS laukus
 2) surinkti informacija is formos
@@ -17,11 +19,36 @@ const submitDOM = formDOM.querySelector('button');
 submitDOM.addEventListener('click', (e) => {
     e.preventDefault();
 
+    const errors = [];
     const formData = {};
     for (const inputDOM of allInputsDOM) {
-        const { id, value } = inputDOM;
+        const { id, value, dataset } = inputDOM;
+        const validationRule = IsValid[dataset.validation];
+        const [err, status] = validationRule(value);
+        if (err) {
+            errors.push(status);
+        }
         formData[id] = value;
     }
 
-    console.log(formData);
+    if (formData.password
+        && formData.repass
+        && formData.password !== formData.repass) {
+        errors.push('Nesutampa slaptazodziai');
+    }
+    errorsDOM.innerText = errors.join('\r\n');
+
+    if (errors.length === 0) {
+        delete formData.repass;
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                const data = JSON.parse(this.responseText);
+                console.log(data);
+            }
+        };
+        xhttp.open("POST", formDOM.action, true);
+        xhttp.send(JSON.stringify(formData));
+    }
 })
