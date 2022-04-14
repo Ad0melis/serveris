@@ -33,7 +33,7 @@ class PageRegister extends PageTemplate {
                                 </div>
                                 <div class="form-row">
                                     <label for="repass">Repeat password</label>
-                                    <input id="repass" data-validation="password" type="password" placeholder="Type password" required value="chuckchuckchuck2">
+                                    <input id="repass" data-validation="password" type="password" placeholder="Type password" required value="chuckchuckchuck">
                                 </div>
                                 <div class="form-row">
                                     <button type="submit" class="btn">Create account</button>
