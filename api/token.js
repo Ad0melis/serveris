@@ -17,7 +17,7 @@ handler.token = (data, callback) => {
 
 handler._method = {};
 
-handler._method.post = async (data, callback) => {
+handler._method.post = async(data, callback) => {
     const user = data.payload;
     const { email, password } = user;
     const requiredKeys = 2;
@@ -131,9 +131,9 @@ handler._method.delete = (data, callback) => {
     })
 }
 
-handler._method.verify = async (token) => {
-    if (typeof token !== 'string'
-        || token.length !== config.sessionTokenLength) {
+handler._method.verify = async(token) => {
+    if (typeof token !== 'string' ||
+        token.length !== config.sessionTokenLength) {
         return false;
     }
 
@@ -155,9 +155,9 @@ handler._method.verify = async (token) => {
     return true;
 }
 
-handler._method.getUserDetails = async (token) => {
-    if (typeof token !== 'string'
-        || token.length !== config.sessionTokenLength) {
+handler._method.getUserDetails = async(token) => {
+    if (typeof token !== 'string' ||
+        token.length !== config.sessionTokenLength) {
         return {};
     }
 
