@@ -1,197 +1,128 @@
 import { file } from "../lib/file.js";
+import { IsValid } from "../lib/IsValid.js";
 import { utils } from "../lib/utils.js";
 
 const handler = {};
 
-//handler.[xxx] pakeisti
-handler.product = async(data, callback) => {
+handler.product = (data, callback) => {
     const acceptableMethods = ['get', 'post', 'put', 'delete'];
 
     if (acceptableMethods.includes(data.httpMethod)) {
-        return await handler._method[data.httpMethod](data, callback);
+        return handler._method[data.httpMethod](data, callback);
     }
 
-    return callback(400, 'Product: veiksmas NEleistinas');
+    return callback(400, 'Token: veiksmas NEleistinas');
 }
 
 handler._method = {};
 
-/**
- * Produkto sukurimas
- */
-handler._method.post = async(data, callback) => {
-    // 1) reikia patikrinti ar data.payload (keys and values) yra teisingi
+handler._method.post = async (data, callback) => {
     const product = data.payload;
-    if (typeof product !== 'object' || Object.keys(product).length !== 3) {
-        return callback(200, {
-            status: 'Error',
-            msg: 'Produkto objekta sudaro tik 3 elementai (name, price, inStock)',
+    const { name, price, inStock } = product;
+
+    if (typeof product !== 'object'
+        || Array.isArray(product)
+        || Object.keys(product).length !== 3) {
+        return callback(400, {
+            status: 'Success',
+            msg: 'Netinkamas produkto objektas',
         })
     }
 
-    if (typeof product.name !== 'string' || product.name == '') {
+    if (typeof name !== 'string'
+        || name === '') {
         return callback(400, {
-            status: 'Error',
-            msg: 'Netinkamas name',
+            status: 'Success',
+            msg: 'Netinkamas produkto pavadinimas',
         })
     }
 
-    if (typeof product.price !== 'number' || product.price < 0) {
+    if (typeof price !== 'number'
+        || price < 0) {
         return callback(400, {
-            status: 'Error',
-            msg: 'Netinkamas price',
+            status: 'Success',
+            msg: 'Netinkama produkto kaina',
         })
     }
 
-    console.log(typeof product.InStock);
-
-    if (typeof product.inStock !== 'number' || product.inStock < 0) {
+    if (typeof inStock !== 'number'
+        || inStock < 0) {
         return callback(400, {
-            status: 'Error',
-            msg: 'Netinkamas inStock',
+            status: 'Success',
+            msg: 'Netinkamas produkto kiekis',
         })
     }
 
-    // 2) Nuskaitome kokie failai yra .data/products folderyje
-    // const [productsListError, productsList] = await file.list('products');
-
-    // if (productsListError) {
-    //     return callback(500, {
-    //         status: 'Error',
-    //         msg: 'Ivyko klaida bandant sukurti produkta',
-    //     })
-    // }
-    // console.log(productsList);
-
-    // 2) sukuriame [produktas].json ir ji irasome 
-    const [productCreateError] = await file.create('products', (product.name + '.json').toLowerCase().replaceAll(' ', '-'), product)
-    if (productCreateError) {
+    const fileName = name.toLowerCase().split(' ').join('-') + '.json';
+    const [createErr] = await file.create('products', fileName, product);
+    if (createErr) {
         return callback(400, {
-            status: 'Error',
-            msg: 'Klaida bandant sukurti produkta',
+            status: 'Success',
+            msg: 'Nepavyko sukurti produkto',
         })
     }
 
     return callback(200, {
         status: 'Success',
-        msg: 'Produktas sukurta sekmingai',
+        msg: 'Produktas irasytas',
     })
-
-
 }
 
-/**
- * Produkto informacijos gavimas
- */
-handler._method.get = async(data, callback) => {
+handler._method.get = async (data, callback) => {
     const url = data.trimmedPath;
     const productName = url.split('/')[2];
 
-    let [err, content] = await file.read('products', productName + '.json');
+    const [err, content] = await file.read('products', productName + '.json');
     if (err) {
-        return callback(200, {
+        return callback(400, {
             status: 'Error',
             msg: 'Nepavyko rasti norimo produkto',
         })
     }
 
-    content = utils.parseJSONtoObject(content);
-    if (!content) {
-        return callback(200, {
+    const obj = utils.parseJSONtoObject(content);
+    if (!obj) {
+        return callback(400, {
             status: 'Error',
-            msg: 'Nepavyko apdoroti produkto duomenu',
+            msg: 'Nepavyko perskaityti norimo produkto informacijos',
         })
     }
 
-
     return callback(200, {
         status: 'Success',
-        msg: 'Visa produkto informacija sekmingai gauta',
-        content: content
+        msg: obj,
     })
 }
 
-/**
- * Produkto informacijos atnaujinimas
- */
-handler._method.put = async(data, callback) => {
+handler._method.put = async (data, callback) => {
     const url = data.trimmedPath;
     const productName = url.split('/')[2];
 
-    const { price, inStock } = data.payload;
-    let updatedValues = 0;
-    let newProductData = {};
-
-    if (price) {
-        newProductData = {...newProductData, price };
-        updatedValues++;
-    }
-
-    if (inStock) {
-        newProductData = {...newProductData, inStock };
-        updatedValues++;
-    }
-
-    if (!updatedValues) {
-        return callback(200, {
+    const [err, content] = await file.read('products', productName + '.json');
+    if (err) {
+        return callback(400, {
             status: 'Error',
-            msg: 'Objekte nerasta informacijos, kuria butu leidziama atnaujinti, todel niekas nebuvo atnaujinta',
+            msg: 'Nepavyko rasti norimo produkto',
         })
     }
 
-    const [readErr, readMsg] = await file.read('products', productName + '.json');
-    if (readErr) {
-        return callback(500, {
+    const obj = utils.parseJSONtoObject(content);
+    if (!obj) {
+        return callback(400, {
             status: 'Error',
-            msg: 'Nepavyko gauti produkto informacijos, kuria bandoma atnaujinti',
-        })
-    }
-
-    const productObj = utils.parseJSONtoObject(readMsg);
-    if (!productObj) {
-        return callback(500, {
-            status: 'Error',
-            msg: 'Ivyko klaida, bandant nuskaityti produkto informacija',
-        })
-    }
-
-
-    const updatedProductData = {
-        ...productObj,
-        ...newProductData,
-    }
-
-    const [updateErr] = await file.update('products', productName + '.json', updatedProductData);
-    if (updateErr) {
-        return callback(500, {
-            status: 'Error',
-            msg: 'Nepavyko atnaujinti produkto informacijos',
+            msg: 'Nepavyko perskaityti norimo produkto informacijos',
         })
     }
 
     return callback(200, {
         status: 'Success',
-        msg: 'Produkto informacija sekmingai atnaujinta',
+        msg: 'Produktas sekmingai atnaujintas',
     })
 }
 
-/**
- * Vartotojo paskyros istrinimas
- */
-handler._method.delete = async(data, callback) => {
-    const url = data.trimmedPath;
-    const productName = url.split('/')[2];
-
-    const [deleteErr] = await file.delete('products', productName + '.json');
-    if (deleteErr) {
-        return callback(500, {
-            status: 'Error',
-            msg: 'Nepavyko istrinti produkto',
-        })
-    }
-
+handler._method.delete = async (data, callback) => {
     return callback(200, {
-        status: 'Success',
+        action: 'DELETE',
         msg: 'Produktas sekmingai istrintas is sistemos',
     })
 }
